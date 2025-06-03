@@ -1,10 +1,7 @@
+
+import os 
 import yaml 
 from flask import Flask, jsonify 
-
-with open("config.yaml", "r") as file:
-    data = yaml.safe_load(file) 
-
-app = Flask(__name__) 
 
 def response_handler(response_config):
     if response_config["type"] == "raw":
@@ -16,26 +13,34 @@ def response_handler(response_config):
     else:
         pass 
 
-environment = data['environment']           # Get the evironment details
-config = data[environment]["flask"]         # Get the flask config
-endpoints = data[environment]["endpoints"]  # Endpoints for the API
+def run_server(config_path = "config.yaml"):
+    if not os.path.exists(config_path):
+        raise FileNotFoundError(f"Config file not found: {config_path}") 
+    
+    with open("config.yaml", "r") as file:
+        data = yaml.safe_load(file) 
 
-for endpoint in endpoints:
-    path = endpoint["path"]
-    method = endpoint["method"]
-    response = endpoint["response"]
+    app = Flask(__name__) 
 
-    def handler(response_config = response):
-        return response_handler(response_config) 
+    environment = data['environment']           # Get the evironment details
+    config = data[environment]["flask"]         # Get the flask config
+    endpoints = data[environment]["endpoints"]  # Endpoints for the API
 
-    app.add_url_rule(
-        path, 
-        endpoint = path,
-        view_func = handler,
-        methods = method
-    )
+    for endpoint in endpoints:
+        path = endpoint["path"]
+        method = endpoint["method"]
+        response = endpoint["response"]
 
-if __name__ == "__main__":
+        def handler(response_config = response):
+            return response_handler(response_config) 
+
+        app.add_url_rule(
+            path, 
+            endpoint = path,
+            view_func = handler,
+            methods = method
+        )
+
     app.run(
         host = config["host"],
         port = config["port"],
