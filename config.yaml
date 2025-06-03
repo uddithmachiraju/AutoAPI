@@ -1,0 +1,18 @@
+environment: dev
+
+dev:
+  flask:
+    host: "0.0.0.0"
+    port: 5000
+    debug: true
+  endpoints:
+    - path: "/"
+      method: ["GET"]
+      response: 
+        type: "raw"
+        value: "Welocome to AutoAPI"
+    - path: "/status"
+      method: ["GET"]
+      response:
+        type: "raw"
+        value: "OK" 
