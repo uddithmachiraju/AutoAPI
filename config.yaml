@@ -6,13 +6,43 @@ dev:
     port: 5000
     debug: true
   endpoints:
+
     - path: "/"
       method: ["GET"]
       response: 
         type: "raw"
         value: "Welocome to AutoAPI"
+
     - path: "/status"
       method: ["GET"]
       response:
         type: "raw"
         value: "OK" 
+
+    - path: "/books/"
+      method: ["GET"]
+      response: 
+        type: "python"
+        value: "tests.book_api"
+        function: "get_books" 
+
+    - path: "/books/add"
+      method: ["POST"]
+      response: 
+        type: "python"
+        value: "tests.book_api"
+        function: "post_book"
+
+    - path: "/books/update/<id>"
+      method: ["PUT"]
+      response: 
+        type: "python"
+        value: "tests.book_api"
+        function: "update_book"
+
+    - path: "/books/delete/<id>"
+      method: ["DELETE"]
+      response: 
+        type: "python"
+        value: "tests.book_api"
+        function: "delete_book" 
