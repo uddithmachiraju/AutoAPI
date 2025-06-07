@@ -5,8 +5,8 @@ dev:
     host: "0.0.0.0"
     port: 5000
     debug: true
-  endpoints:
 
+  endpoints:
     - path: "/"
       method: ["GET"]
       response: 
@@ -19,30 +19,32 @@ dev:
         type: "raw"
         value: "OK" 
 
-    - path: "/books/"
-      method: ["GET"]
-      response: 
-        type: "python"
-        value: "tests.book_api"
-        function: "get_books" 
+    - path: "/books"
+      routes: 
+        - path: "/" 
+          method: ["GET"]
+          response: 
+            type: "python"
+            value: "tests.book_api"
+            function: "get_books" 
 
-    - path: "/books/add"
-      method: ["POST"]
-      response: 
-        type: "python"
-        value: "tests.book_api"
-        function: "post_book"
+        - path: "/add"
+          method: ["POST"]
+          response: 
+            type: "python"
+            value: "tests.book_api"
+            function: "post_book"
 
-    - path: "/books/update/<id>"
-      method: ["PUT"]
-      response: 
-        type: "python"
-        value: "tests.book_api"
-        function: "update_book"
+        - path: "/update/<id>"
+          method: ["PUT"]
+          response: 
+            type: "python"
+            value: "tests.book_api"
+            function: "update_book"
 
-    - path: "/books/delete/<id>"
-      method: ["DELETE"]
-      response: 
-        type: "python"
-        value: "tests.book_api"
-        function: "delete_book" 
+        - path: "/delete/<id>"
+          method: ["DELETE"]
+          response: 
+            type: "python"
+            value: "tests.book_api"
+            function: "delete_book" 

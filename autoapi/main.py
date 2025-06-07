@@ -17,12 +17,37 @@ def response_handler(response_config, method, url_params):
         input_data = {}
         if request.method in ("POST", "PUT"):
             input_data = request.get_json()
+            result = func(input_data, url_params or {}) 
         elif request.method == "DELETE":
             result = func(url_params or {})
             return jsonify(result) 
+        else: 
+            result = func(url_params or {})
 
-        result = func(input_data, url_params or {}) 
         return jsonify(result) 
+    
+def register_routes(app, base_path, route_definations):
+    for endpoint in route_definations:
+        raw_subpath = endpoint["path"]
+        full_path = f"{base_path.rstrip('/')}/{raw_subpath.lstrip('/')}"
+        print(full_path)
+
+        # If there are nested routes in the endpoint
+        if "routes" in endpoint:
+            register_routes(app, full_path.rstrip("/"), endpoint["routes"]) 
+        else:
+            method = endpoint["method"]
+            response = endpoint["response"]
+
+            def handler(response_config = response, method = method, **kwargs):
+                return response_handler(response_config, method, url_params = kwargs) 
+
+            app.add_url_rule(
+                full_path, 
+                endpoint = full_path,
+                view_func = handler,
+                methods = method
+            )
 
 def run_server(config_path = "config.yaml"):
     if not os.path.exists(config_path):
@@ -37,20 +62,7 @@ def run_server(config_path = "config.yaml"):
     config = data[environment]["flask"]
     endpoints = data[environment]["endpoints"] 
 
-    for endpoint in endpoints:
-        path = endpoint["path"]
-        method = endpoint["method"]
-        response = endpoint["response"]
-
-        def handler(response_config = response, method = method, **kwargs):
-            return response_handler(response_config, method, url_params = kwargs) 
-
-        app.add_url_rule(
-            path, 
-            endpoint = path,
-            view_func = handler,
-            methods = method
-        )
+    register_routes(app, "", endpoints)
 
     app.run(
         host = config["host"],
