@@ -1,6 +1,7 @@
 import os 
 import yaml 
 import importlib
+from autoapi.logger import get_logger
 from flask import Flask, jsonify, request
 
 def response_handler(response_config, method, url_params):
@@ -30,7 +31,6 @@ def register_routes(app, base_path, route_definations):
     for endpoint in route_definations:
         raw_subpath = endpoint["path"]
         full_path = f"{base_path.rstrip('/')}/{raw_subpath.lstrip('/')}"
-        print(full_path)
 
         # If there are nested routes in the endpoint
         if "routes" in endpoint:
@@ -61,8 +61,21 @@ def run_server(config_path = "config.yaml"):
     environment = data['environment']
     config = data[environment]["flask"]
     endpoints = data[environment]["endpoints"] 
+    logging_info = data.get(environment, {}).get("logging", {"enabled": "false"})
+
+    logger = None 
+    if logging_info.get("enabled", "false"):
+        logger = get_logger(log_name = logging_info["logfile"], level = logging_info["level"])  
 
     register_routes(app, "", endpoints)
+
+    app.logger = logger 
+
+    if logger:
+        @app.after_request
+        def log_request(response):
+            logger.info(f"{request.method} {request.path} {response.status_code}")
+            return response
 
     app.run(
         host = config["host"],

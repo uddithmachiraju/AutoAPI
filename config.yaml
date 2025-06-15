@@ -6,6 +6,11 @@ dev:
     port: 5000
     debug: true
 
+  logging:
+    enabled: true 
+    logfile: "access" 
+    level: "INFO" 
+
   endpoints:
     - path: "/"
       method: ["GET"]
