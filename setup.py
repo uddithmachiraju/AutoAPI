@@ -16,6 +16,9 @@ setup(
     },
     install_requires = [
         "flask",
-        "PyYAML"
+        "PyYAML",
+        "watchdog",
+        "joblib",
+        "pandas"
     ]
 )

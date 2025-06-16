@@ -11,12 +11,16 @@ dev:
     logfile: "access" 
     level: "INFO" 
 
+  reload:
+    enabled: true 
+    debounce_seconds: 2
+ 
   endpoints:
     - path: "/"
       method: ["GET"]
       response: 
         type: "raw"
-        value: "Welocome to AutoAPI"
+        value: "Welocome to AutoAPI with watchdog "
 
     - path: "/status"
       method: ["GET"]

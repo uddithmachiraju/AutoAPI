@@ -1,8 +1,14 @@
 import os 
 import yaml 
+import datetime
 import importlib
+import threading
 from autoapi.logger import get_logger
 from flask import Flask, jsonify, request
+from autoapi.reloader import start_yaml_watcher
+
+if not os.environ.get("LOG_START_TIME"):
+    os.environ["LOG_START_TIME"] = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
 def response_handler(response_config, method, url_params):
     if response_config["type"] == "raw":
@@ -49,9 +55,9 @@ def register_routes(app, base_path, route_definations):
                 methods = method
             )
 
-def run_server(config_path = "config.yaml"):
-    if not os.path.exists(config_path):
-        raise FileNotFoundError(f"Config file not found: {config_path}") 
+def load_app_config(config_file):
+    if not os.path.exists(config_file):
+        raise FileNotFoundError(f"Config file not found: {config_file}") 
     
     with open("config.yaml", "r") as file:
         data = yaml.safe_load(file) 
@@ -62,21 +68,37 @@ def run_server(config_path = "config.yaml"):
     config = data[environment]["flask"]
     endpoints = data[environment]["endpoints"] 
     logging_info = data.get(environment, {}).get("logging", {"enabled": "false"})
-
+    
     logger = None 
     if logging_info.get("enabled", "false"):
-        logger = get_logger(log_name = logging_info["logfile"], level = logging_info["level"])  
-
-    register_routes(app, "", endpoints)
-
+        logger = get_logger(log_name = logging_info["logfile"], level = logging_info["level"]) 
     app.logger = logger 
 
     if logger:
-        @app.after_request
+        @app.after_request 
         def log_request(response):
             logger.info(f"{request.method} {request.path} {response.status_code}")
             return response
+        
+    app.url_map._rules.clear()
+    app.view_functions.clear()
 
+    register_routes(app, "", endpoints)
+
+    return data, app, config, logger
+
+def run_server(config_path = "config.yaml"):
+    data, app, config, logger = load_app_config(config_path)
+    reload_info = data.get(data["environment"], {}).get("reload", {"enabled": "false"}) 
+        
+    if reload_info.get("enabled", "false"):
+        watcher_thread = threading.Thread(
+            target = start_yaml_watcher, 
+            args = (app, logger, config_path, load_app_config, reload_info["debounce_seconds"]), 
+            daemon = True
+        )
+        watcher_thread.start()
+    
     app.run(
         host = config["host"],
         port = config["port"],
