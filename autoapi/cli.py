@@ -1,5 +1,6 @@
 import argparse 
 from autoapi.main import run_server
+from autoapi.docker_utils import dockerize_app
 
 def main():
     parser = argparse.ArgumentParser(
@@ -16,10 +17,21 @@ def main():
         help = "Path to YAML file" 
     )
 
+    docker_parser = subparser.add_parser("dockerize", help = "Build and run the application using Docker") 
+    docker_parser.add_argument(
+        "--dockerfile",
+        type = str, 
+        default = "Dockerfile",
+        help = "Path to the Dockerfile (default: Dockerfile)"        
+    )
+
     args = parser.parse_args() 
 
     if args.command == "run":
         run_server(args.config) 
+
+    if args.command == "dockerize":
+        dockerize_app(args.dockerfile)  
 
 if __name__ == "__main__":
     main()
