@@ -12,8 +12,8 @@
     environment: dev # May be anything prod/staging
     
     dev: # Use the required env here
-      parameters here: 
-    	  ....
+      parameters here:
+        ....
     ```
     
 2. We can select a framework(as of now only `Flask` was integrated).
@@ -34,13 +34,13 @@
     
     ```yaml
     endpoints:
-    	- path: "/books"
+      - path: "/books"
           routes: 
             - path: "/" 
               method: ["GET"]
               response: 
                 type: "raw"
-    		        value: "Welocome to AutoAPI"
+                value: "Welocome to AutoAPI"
     
             - path: "/add"
               method: ["POST"]
